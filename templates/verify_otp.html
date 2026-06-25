@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify OTP</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="blob blob1"></div>
+    <div class="blob blob2"></div>
+    <div class="blob blob3"></div>
+
+    <div class="glass-card">
+        <h1>VERIFY</h1>
+        <p class="otp-subtitle">Enter the 6-digit code from your authenticator app</p>
+
+        {% if error %}
+        <div class="error-msg">{{ error }}</div>
+        {% endif %}
+
+        <form action="/login/verify-otp" method="post">
+            <input type="hidden" name="username" value="{{ username }}">
+
+            <div class="form-group">
+                <label for="otp_code">Authentication code</label>
+                <input
+                    type="text"
+                    id="otp_code"
+                    name="otp_code"
+                    placeholder="000000"
+                    maxlength="6"
+                    inputmode="numeric"
+                    pattern="[0-9]{6}"
+                    autocomplete="one-time-code"
+                    required
+                    style="letter-spacing: 0.4em; text-align: center; font-size: 1.3rem;">
+            </div>
+
+            <button type="submit" class="btn-signin">VERIFY</button>
+        </form>
+
+        <p class="switch-auth"><a href="/">← Back to login</a></p>
+    </div>
+</body>
+</html>
