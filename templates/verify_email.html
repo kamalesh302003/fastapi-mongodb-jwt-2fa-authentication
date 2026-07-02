@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .otp-inputs {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+        .otp-inputs input {
+            width: 44px !important;
+            height: 52px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 0;
+        }
+        .resend-link {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #4a5568;
+            margin-top: 0.8rem;
+        }
+        .resend-link a {
+            color: #5b8dee;
+            text-decoration: none;
+        }
+        .email-display {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #4a5568;
+            margin-bottom: 1.2rem;
+        }
+        .email-display strong { color: #cdd5e0; }
+        #countdown { color: #5b8dee; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="blob blob1"></div>
+    <div class="blob blob2"></div>
+    <div class="blob blob3"></div>
+
+    <div class="glass-card">
+        <h1>VERIFY EMAIL</h1>
+
+        <p class="email-display">
+            Code sent to <strong>{{ username }}</strong>
+        </p>
+
+        {% if error %}
+        <div class="error-msg">{{ error }}</div>
+        {% endif %}
+
+        {% if success %}
+        <div class="error-msg" style="background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.25);color:#166534;">
+            {{ success }}
+        </div>
+        {% endif %}
+
+        <form action="/verify-email" method="post">
+            <input type="hidden" name="username" value="{{ username }}">
+
+            <!-- 6 individual OTP boxes -->
+            <div class="otp-inputs">
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"
+                       class="otp-box" id="b1" autofocus>
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"
+                       class="otp-box" id="b2">
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"
+                       class="otp-box" id="b3">
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"
+                       class="otp-box" id="b4">
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"
+                       class="otp-box" id="b5">
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"
+                       class="otp-box" id="b6">
+            </div>
+
+            <!-- Hidden combined field submitted to server -->
+            <input type="hidden" name="otp_code" id="otp_code">
+
+            <button type="submit" class="btn-signin" onclick="combineOTP()">VERIFY</button>
+        </form>
+
+        <div class="resend-link">
+            Expires in <span id="countdown">10:00</span> &nbsp;·&nbsp;
+            <a href="/resend-email-otp?username={{ username }}">Resend code</a>
+        </div>
+
+        <p class="switch-auth"><a href="/login">← Back to login</a></p>
+    </div>
+
+    <script>
+        // Auto-advance between boxes
+        const boxes = document.querySelectorAll('.otp-box');
+        boxes.forEach((box, i) => {
+            box.addEventListener('input', () => {
+                if (box.value.length === 1 && i < boxes.length - 1) {
+                    boxes[i + 1].focus();
+                }
+            });
+            box.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !box.value && i > 0) {
+                    boxes[i - 1].focus();
+                }
+            });
+        });
+
+        // Combine all boxes into hidden input on submit
+        function combineOTP() {
+            let code = '';
+            boxes.forEach(b => code += b.value);
+            document.getElementById('otp_code').value = code;
+        }
+
+        // Countdown timer (10 min)
+        let seconds = 600;
+        const cd = document.getElementById('countdown');
+        const timer = setInterval(() => {
+            seconds--;
+            if (seconds <= 0) {
+                clearInterval(timer);
+                cd.textContent = 'Expired';
+                cd.style.color = '#ef4444';
+                return;
+            }
+            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            cd.textContent = `${m}:${s}`;
+        }, 1000);
+    </script>
+</body>
+</html>
